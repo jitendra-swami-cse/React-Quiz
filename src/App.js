@@ -173,24 +173,24 @@ function Header() {
     </header>
   );
 }
-function Start({ startApp }) {
+function StartScreen({ setQuizState }) {
   return (
     <div className="start">
       <h2>Welcome to The React Quiz!</h2>
       <h3>15 questions to test your React mastery</h3>
-      <button className="btn btn-ui" onClick={startApp}>
+      <button className="btn btn-ui" onClick={() => setQuizState("Quiz")}>
         Let's start
       </button>
     </div>
   );
 }
-function QuizHeader() {
+function QuizHeader({ curQues }) {
   return (
     <>
       <header className="progress">
         <progress value="0" max="15"></progress>
         <p>
-          Question <strong>1</strong>/15
+          Question <strong>{curQues}</strong>/15
         </p>
         <p>
           <strong>0</strong>/280
@@ -199,64 +199,101 @@ function QuizHeader() {
     </>
   );
 }
-function QuizFooter({ optSelected }) {
+function QuizFooter({ isSelected, nextQues }) {
   return (
     <>
       <footer>
         <div className="timer">00:00</div>
-        {Boolean(optSelected) && <button className="btn btn-ui">Next</button>}
+        {isSelected && (
+          <button className="btn btn-ui" onClick={nextQues}>
+            Next
+          </button>
+        )}
       </footer>
     </>
   );
 }
 
-function Quiz() {
-  const [curQues, setCurrQues] = useState(1);
-  const { question, options, correctOption } = questions[curQues];
-
-  const [optSelected, setOptSelected] = useState(false);
-  console.log(options);
-
-  function selectOption(opt) {
-    setOptSelected(opt);
-    console.log(`Selection is ${opt}`);
-  }
+function Question({ curQues, isSelected, handleSelectOption, optSelected }) {
+  const { question, options, correctOption } = questions[curQues - 1];
 
   return (
+    <div className="options">
+      <h4>{question}</h4>
+      {Array.from({ length: 4 }, (_, i) => (
+        <button
+          className={
+            "btn btn-option" +
+            (isSelected &&
+              optSelected &&
+              (correctOption == i ? " answer correct" : " wrong"))
+          }
+          onClick={() => handleSelectOption(i + 1)}
+          disabled={isSelected}
+        >
+          {options[i]}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+function Quiz({ setQuizState }) {
+  const [curQues, setCurrQues] = useState(1);
+  const [isSelected, setIsSelected] = useState(false);
+  const [optSelected, setOptSelected] = useState(false);
+
+  function handleSelectOption(opt) {
+    setIsSelected(true);
+    setOptSelected(opt);
+  }
+
+  function nextQues() {
+    questions.length > curQues
+      ? setCurrQues(curQues + 1)
+      : setQuizState("Finished");
+    setIsSelected(false);
+  }
+  return (
     <>
-      <QuizHeader />
-      <div className="options">
-        <h4>{question}</h4>
-        {Array.from({ length: 4 }, (_, i) => (
-          <button
-            className={
-              "btn btn-option" +
-              (optSelected &&
-                (correctOption == i ? " answer correct" : " wrong"))
-            }
-            onClick={() => selectOption(i + 1)}
-            disabled={Boolean(optSelected)}
-          >
-            {options[i]}
-          </button>
-        ))}
-      </div>
-      <QuizFooter optSelected={optSelected} />
+      <QuizHeader curQues={curQues} />
+      <Question
+        curQues={curQues}
+        isSelected={isSelected}
+        handleSelectOption={handleSelectOption}
+        optSelected={optSelected}
+      />
+      <QuizFooter isSelected={isSelected} nextQues={nextQues} />
     </>
   );
 }
 
+function Result({ setQuizState }) {
+  return (
+    <>
+      <p className="result">
+        <span>🤨</span> You scored <strong>70</strong> out of 280 (25%)
+      </p>
+      <p class="highscore">(Highscore: 70 points)</p>
+      <button class="btn btn-ui" onClick={() => setQuizState("StartScreen")}>
+        Restart quiz
+      </button>
+    </>
+  );
+}
 export default function App() {
-  const [start, setStart] = useState(false);
-
-  function startApp() {
-    setStart(true);
-  }
+  const [quizState, setQuizState] = useState("StartScreen");
 
   return (
     <div className="app">
       <Header />
-      <main>{start ? <Quiz /> : <Start startApp={startApp} />}</main>
+      <main className="main">
+        {quizState === "StartScreen" && (
+          <StartScreen setQuizState={setQuizState} />
+        )}
+        {quizState === "Quiz" && <Quiz setQuizState={setQuizState} />}
+        {quizState === "Finished" && <Result setQuizState={setQuizState} />}
+      </main>
     </div>
   );
 }
