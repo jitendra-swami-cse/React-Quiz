@@ -7,7 +7,7 @@ function QuizFooter({ answer, isLastQues, dispatch }) {
     const timer = setInterval(() => {
       setSec((sec) => sec + 1);
     }, 1000);
-    if (sec >= 10) dispatch({ type: "finish" });
+    if (sec >= 600) dispatch({ type: "finish" });
     return () => clearInterval(timer);
   }, [sec, dispatch]);
 
