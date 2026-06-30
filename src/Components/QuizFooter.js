@@ -1,8 +1,22 @@
+import { useState, useEffect } from "react";
+
 function QuizFooter({ answer, isLastQues, dispatch }) {
-  console.log(`isLastQues in QuizFooter ${isLastQues}`);
+  const [sec, setSec] = useState(0);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setSec((sec) => sec + 1);
+    }, 1000);
+    if (sec >= 10) dispatch({ type: "finish" });
+    return () => clearInterval(timer);
+  }, [sec, dispatch]);
+
+  const mm = Math.floor(sec / 60);
+  const ss = sec % 60;
+
   return (
     <footer>
-      <div className="timer">03:18</div>
+      <div className="timer">{`0${mm}:${ss > 9 ? ss : "0" + ss}`}</div>
       {answer !== null && (
         <button
           className="btn btn-ui"

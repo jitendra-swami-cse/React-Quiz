@@ -1,9 +1,10 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 
 export function useFetchData(url, stateSetter) {
   const [isLoading, setIsLoading] = useState(false);
   const [isError, setIsError] = useState("");
-
+  const setterRef = useRef(stateSetter);
+  setterRef.current = stateSetter;
   useEffect(
     function () {
       if (!url) return;
@@ -26,7 +27,7 @@ export function useFetchData(url, stateSetter) {
 
           console.log(resData);
           // 2. Set the data only if everything was successful
-          stateSetter(resData);
+          setterRef.current(resData);
 
           setIsError("");
         } catch (error) {
@@ -41,7 +42,7 @@ export function useFetchData(url, stateSetter) {
       fetchData();
       return () => controller.abort();
     },
-    [url, stateSetter],
+    [url],
   );
 
   return { isLoading, isError };

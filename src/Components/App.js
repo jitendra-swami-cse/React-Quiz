@@ -1,4 +1,4 @@
-import { useEffect, useReducer } from "react";
+import { useReducer } from "react";
 
 import { useFetchData } from "../Hooks/useFetchData";
 
@@ -35,10 +35,11 @@ function reducer(state, action) {
       return { ...state, index: state.index + 1, answer: null };
     }
     case "finish": {
+      console.log(state);
       return { ...state, status: "finished" };
     }
     case "reset": {
-      return { ...intialState };
+      return { ...intialState, questions: state.questions };
     }
     default:
       return "";
@@ -51,9 +52,9 @@ export default function App() {
     intialState,
   );
 
-  const { isLoading, isError } = useFetchData(
-    "http://localhost:8000/questions",
-    (data) => dispatch({ type: "setQuestions", payload: data }),
+  // const { isLoading, isError } = useFetchData(
+  useFetchData("http://localhost:8000/questions", (data) =>
+    dispatch({ type: "setQuestions", payload: data }),
   );
 
   const totalPoints = questions.reduce((prev, curr) => prev + curr.points, 0);
